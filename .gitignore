@@ -5,6 +5,7 @@ Intermediate/
 Saved/
 
 *.sln
+*.slnx
 *.suo
 *.xcodeproj
 *.xcworkspace
@@ -18,6 +19,7 @@ Saved/
 
 .vscode/
 .idea/
+_workspace/
 
 # Visual Studio cache
 .vs/
