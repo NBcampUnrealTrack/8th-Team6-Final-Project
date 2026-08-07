@@ -36,14 +36,21 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UInputAction> SprintAction;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UInputAction> InteractAction;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Movement")
 	float WalkSpeed = 400.0f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Movement")
 	float SprintSpeed = 700.0f;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Interaction")
+	float InteractionDistance = 300.0f;
+
 	void Look(const FInputActionValue& Value);
 	void Move(const FInputActionValue& Value);
 	void StartSprint();
 	void StopSprint();
+	void Interact();
 };

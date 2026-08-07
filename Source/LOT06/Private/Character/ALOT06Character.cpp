@@ -1,10 +1,10 @@
 #include "Character/ALOT06Character.h"
-
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Engine/LocalPlayer.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerController.h"
+#include "DrawDebugHelpers.h"
 #include "InputActionValue.h"
 
 AALOT06Character::AALOT06Character()
@@ -93,6 +93,13 @@ void AALOT06Character::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
         this,
         &ThisClass::StopSprint
     );
+
+    EnhancedInput->BindAction(
+        InteractAction,
+        ETriggerEvent::Started,
+        this,
+        &ThisClass::Interact
+    );
 }
 
 void AALOT06Character::Look(const FInputActionValue& Value)
@@ -135,4 +142,71 @@ void AALOT06Character::StopSprint()
     GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 }
 
+void AALOT06Character::Interact() {
+    APlayerController* PlayerController =
+        Cast<APlayerController>(Controller);
 
+    if (!PlayerController || !GetWorld())
+    {
+        return;
+    }
+
+    FVector Start;
+    FRotator ViewRotation;
+
+    PlayerController->GetPlayerViewPoint(
+        Start,
+        ViewRotation
+    );
+
+    const FVector Direction = ViewRotation.Vector();
+    const FVector End =
+        Start + Direction * InteractionDistance;
+
+    FHitResult HitResult;
+
+    FCollisionQueryParams QueryParams(
+        SCENE_QUERY_STAT(LOT06InteractTrace),
+        false,
+        this
+    );
+
+    const bool bHit = GetWorld()->LineTraceSingleByChannel(
+        HitResult,
+        Start,
+        End,
+        ECC_Visibility,
+        QueryParams
+    );
+
+    DrawDebugLine(
+        GetWorld(),
+        Start,
+        End,
+        bHit ? FColor::Green : FColor::Red,
+        false,
+        1.0f,
+        0,
+        2.0f
+    );
+
+    if (!bHit)
+    {
+        UE_LOG(LogTemp, Log, TEXT("아무것도 맞지 않음"));
+        return;
+    }
+
+    AActor* HitActor = HitResult.GetActor();
+
+    if (!HitActor)
+    {
+        return;
+    }
+
+    UE_LOG(
+        LogTemp,
+        Log,
+        TEXT("바라본 Actor: %s"),
+        *GetNameSafe(HitActor)
+    );
+}
