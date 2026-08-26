@@ -8,6 +8,25 @@
 #include "Engine/DataAsset.h"
 #include "DOSEndingRuleAsset.generated.h"
 
+class UTexture2D;
+
+// One character's epilogue text shown on the ending result screen after the narration lines.
+USTRUCT(BlueprintType)
+struct FDOSCharacterEpilogue
+{
+	GENERATED_BODY()
+
+	// Matches a character's identifying key (e.g. the character data asset's row name).
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "DOS|Ending")
+	FName CharacterId = NAME_None;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "DOS|Ending")
+	FText EpilogueText;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "DOS|Ending")
+	TSoftObjectPtr<UTexture2D> Portrait;
+};
+
 USTRUCT(BlueprintType)
 struct FDOSEndingRule
 {
@@ -27,6 +46,18 @@ struct FDOSEndingRule
 	// None of these may be present in the current round's active interventions.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "DOS|Ending")
 	TArray<FName> ForbiddenInterventions;
+
+	// Marks this as the true ending: reaching it permanently unlocks the main menu's alternate
+	// background (see UDOSSaveGameSubsystem). At most one rule should set this.
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "DOS|Ending")
+	bool bIsTrueEnding = false;
+
+	// Shown center-screen, one line at a time, before the character epilogues.
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "DOS|Ending")
+	TArray<FText> NarrationLines;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "DOS|Ending")
+	TArray<FDOSCharacterEpilogue> CharacterEpilogues;
 
 	bool Matches(const TSet<FName>& ActiveInterventions) const;
 };

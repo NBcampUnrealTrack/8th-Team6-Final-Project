@@ -82,6 +82,14 @@ void UDOSTimelineSubsystem::RestartLoop()
 	OnRoundRestarted.Broadcast(CurrentRound);
 }
 
+void UDOSTimelineSubsystem::RestoreState(float TimeSeconds, int32 Round)
+{
+	CurrentRound = FMath::Max(Round, 1);
+	PlayState = EDOSTimelinePlayState::Paused;
+	CurrentTimeSeconds = FMath::Clamp(TimeSeconds, 0.f, TimelineDurationSeconds);
+	OnTimelineTimeChanged.Broadcast(CurrentTimeSeconds);
+}
+
 void UDOSTimelineSubsystem::SetCurrentTime(float NewTimeSeconds)
 {
 	if (FMath::IsNearlyEqual(CurrentTimeSeconds, NewTimeSeconds))

@@ -41,6 +41,15 @@ public:
 	UFUNCTION(BlueprintPure, Category = "DOS|Case")
 	bool HasDiscoveredClue(FName ClueId) const { return CollectedClues.Contains(ClueId); }
 
+	UFUNCTION(BlueprintPure, Category = "DOS|Case")
+	const TSet<FName>& GetCollectedClues() const { return CollectedClues; }
+
+	// Directly sets both sets from save data (e.g. Continue) and broadcasts
+	// OnActiveInterventionsChanged so NPC schedules refresh - does not touch CollectedClues
+	// listeners since clue rediscovery notifications don't need to re-fire on load.
+	UFUNCTION(BlueprintCallable, Category = "DOS|Case")
+	void RestoreState(const TArray<FName>& InActiveInterventions, const TArray<FName>& InCollectedClues);
+
 	// Fires whenever ActiveInterventions changes (new intervention, or reset on round
 	// restart). NPC schedule components should refresh off this - see
 	// UDOSCharacterScheduleComponent::RefreshResolvedSchedule.

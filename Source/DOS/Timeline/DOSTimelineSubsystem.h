@@ -50,6 +50,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "DOS|Timeline")
 	void RestartLoop();
 
+	// Directly sets time/round from save data (e.g. Continue) and unconditionally broadcasts
+	// OnTimelineTimeChanged, unlike ScrubTo/SetCurrentTime which skip the broadcast when the
+	// new value is unchanged - listeners bound after this call still need to hear about it.
+	UFUNCTION(BlueprintCallable, Category = "DOS|Timeline")
+	void RestoreState(float TimeSeconds, int32 Round);
+
 	UFUNCTION(BlueprintPure, Category = "DOS|Timeline")
 	float GetCurrentTime() const { return CurrentTimeSeconds; }
 

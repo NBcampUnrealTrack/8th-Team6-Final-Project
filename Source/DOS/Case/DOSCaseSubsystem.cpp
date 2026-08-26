@@ -37,6 +37,17 @@ bool UDOSCaseSubsystem::DiscoverClue(FName ClueId)
 	return true;
 }
 
+void UDOSCaseSubsystem::RestoreState(const TArray<FName>& InActiveInterventions, const TArray<FName>& InCollectedClues)
+{
+	ActiveInterventions.Reset();
+	ActiveInterventions.Append(InActiveInterventions);
+
+	CollectedClues.Reset();
+	CollectedClues.Append(InCollectedClues);
+
+	OnActiveInterventionsChanged.Broadcast();
+}
+
 void UDOSCaseSubsystem::HandleRoundRestarted(int32 NewRound)
 {
 	if (ActiveInterventions.Num() > 0)
