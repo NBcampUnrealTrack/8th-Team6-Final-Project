@@ -4,9 +4,12 @@
 #include "Engine/World.h"
 #include "Engine/GameInstance.h"
 
+#define LOCTEXT_NAMESPACE "DOSIntervention"
+
 UDOSInterventionComponent::UDOSInterventionComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
+	PromptText = LOCTEXT("DefaultPrompt", "밀기");
 }
 
 void UDOSInterventionComponent::BeginPlay()
@@ -41,13 +44,46 @@ bool UDOSInterventionComponent::IsActiveThisRound() const
 	return Case && Case->HasIntervened(InterventionId);
 }
 
+EDOSInteractResult UDOSInterventionComponent::Interact()
+{
+	return TryIntervene() ? EDOSInteractResult::Succeeded : EDOSInteractResult::Rejected;
+}
+
+bool UDOSInterventionComponent::IsUnlocked() const
+{
+	const UDOSTimelineSubsystem* Timeline = CachedTimelineSubsystem.Get();
+	if (!Timeline || Timeline->GetCurrentRound() < 2)
+	{
+		return false; // 1회차는 관찰 전용이다.
+	}
+
+	if (RequiredWitnessId.IsNone())
+	{
+		return true;
+	}
+
+	const UDOSCaseSubsystem* Case = CachedCaseSubsystem.Get();
+	return Case && Case->HasDiscoveredClue(RequiredWitnessId);
+}
+
 bool UDOSInterventionComponent::TryIntervene()
 {
-	if (InterventionId.IsNone() || !IsWithinWindow())
+	if (InterventionId.IsNone() || !IsWithinWindow() || !IsUnlocked())
 	{
 		return false;
 	}
 
 	UDOSCaseSubsystem* Case = CachedCaseSubsystem.Get();
-	return Case && Case->RegisterIntervention(InterventionId);
+	if (!Case || !Case->RegisterIntervention(InterventionId))
+	{
+		return false;
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("[DOS] 개입 성립: %s (%s)"),
+		*InterventionId.ToString(), *GetOwner()->GetName());
+
+	OnIntervened.Broadcast();
+	return true;
 }
+
+#undef LOCTEXT_NAMESPACE

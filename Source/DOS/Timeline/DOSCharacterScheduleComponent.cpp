@@ -68,6 +68,10 @@ FDOSCharacterState UDOSCharacterScheduleComponent::SampleAtTime(float TimeSecond
 		Result.RoomId = Only.RoomId;
 		Result.ActionTag = Only.ActionTag;
 		Result.ActionMontage = Only.ActionMontage;
+		Result.WitnessId = Only.WitnessId;
+		Result.GoalLocation = Only.Location;
+		Result.GoalRotation = Only.Rotation;
+		Result.GoalTimeSeconds = Only.TimeSeconds;
 		Result.bIsClamped = true;
 		return Result;
 	}
@@ -81,6 +85,10 @@ FDOSCharacterState UDOSCharacterScheduleComponent::SampleAtTime(float TimeSecond
 		Result.RoomId = Last.RoomId;
 		Result.ActionTag = Last.ActionTag;
 		Result.ActionMontage = Last.ActionMontage;
+		Result.WitnessId = Last.WitnessId;
+		Result.GoalLocation = Last.Location;
+		Result.GoalRotation = Last.Rotation;
+		Result.GoalTimeSeconds = Last.TimeSeconds;
 		Result.bIsClamped = true;
 		return Result;
 	}
@@ -113,6 +121,13 @@ FDOSCharacterState UDOSCharacterScheduleComponent::SampleAtTime(float TimeSecond
 	Result.RoomId = Prev.RoomId;
 	Result.ActionTag = Prev.ActionTag;
 	Result.ActionMontage = Prev.ActionMontage;
+	Result.WitnessId = Prev.WitnessId;
+	// **다음 웨이포인트가 목표다.** Prev를 목표로 삼으면 이미 지나온 자리로 가려 해서
+	// 출발이 한 박자 늦고, 다음 박자가 올 때까지 도착하지 못한다. 웹 검증의 기준도
+	// "이 박자에 출발해 다음 지시 전에 닿는가"이므로 Next가 맞다.
+	Result.GoalLocation = Next.Location;
+	Result.GoalRotation = Next.Rotation;
+	Result.GoalTimeSeconds = Next.TimeSeconds;
 	Result.bIsClamped = false;
 
 	return Result;
@@ -126,10 +141,13 @@ void UDOSCharacterScheduleComponent::HandleTimelineTimeChanged(float NewTimeSeco
 void UDOSCharacterScheduleComponent::ApplyState(const FDOSCharacterState& State)
 {
 	// Schedule playback is fully scripted, so the transform is set directly rather than
-	// through a movement component.
-	if (AActor* Owner = GetOwner())
+	// through a movement component - unless the owner drives its own walking (NavMesh).
+	if (bApplyTransformToOwner)
 	{
-		Owner->SetActorLocationAndRotation(State.Location, State.Rotation);
+		if (AActor* Owner = GetOwner())
+		{
+			Owner->SetActorLocationAndRotation(State.Location, State.Rotation);
+		}
 	}
 
 	OnCharacterStateApplied.Broadcast(State);

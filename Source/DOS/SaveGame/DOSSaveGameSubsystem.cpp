@@ -4,6 +4,7 @@
 #include "Case/DOSCaseSubsystem.h"
 #include "Case/DOSEndingSubsystem.h"
 #include "Case/DOSEndingRuleAsset.h"
+#include "Settings/DOSLevelSettings.h"
 #include "Kismet/GameplayStatics.h"
 #include "UObject/UObjectGlobals.h"
 
@@ -11,9 +12,23 @@ namespace DOSSaveGameConstants
 {
 	static const FString SlotName = TEXT("DOSSave");
 	static const int32 UserIndex = 0;
-	// Only completed/finished level in the project so far - swap this once a real gameplay
-	// level exists, see Docs/Plan_MainMenu_SaveSystem.md.
-	static const TCHAR* GameplayLevelPath = TEXT("/Game/DoS/Maps/L_TestRoom");
+}
+
+namespace
+{
+	// 레벨은 Project Settings -> Game -> **DOS Levels** 에서 지정한다.
+	// 종전에는 여기에 L_TestRoom이 하드코딩되어 있어서 새 게임이 8월에 만든 테스트 방을 열었다.
+	void OpenGameplayLevel(const UObject* WorldContext)
+	{
+		const UDOSLevelSettings* Settings = UDOSLevelSettings::Get();
+		if (!Settings || Settings->GameplayLevel.IsNull())
+		{
+			UE_LOG(LogTemp, Error,
+				TEXT("[DOS] Gameplay Level이 비어 있습니다 - Project Settings > Game > DOS Levels 에서 지정하세요."));
+			return;
+		}
+		UGameplayStatics::OpenLevelBySoftObjectPtr(WorldContext, Settings->GameplayLevel);
+	}
 }
 
 void UDOSSaveGameSubsystem::Initialize(FSubsystemCollectionBase& Collection)
@@ -89,7 +104,7 @@ void UDOSSaveGameSubsystem::StartNewGame()
 		SaveToDisk();
 	}
 
-	UGameplayStatics::OpenLevel(this, FName(DOSSaveGameConstants::GameplayLevelPath));
+	OpenGameplayLevel(this);
 }
 
 void UDOSSaveGameSubsystem::ContinueGame()
@@ -101,7 +116,7 @@ void UDOSSaveGameSubsystem::ContinueGame()
 	}
 
 	bPendingContinueRestore = true;
-	UGameplayStatics::OpenLevel(this, FName(DOSSaveGameConstants::GameplayLevelPath));
+	OpenGameplayLevel(this);
 }
 
 void UDOSSaveGameSubsystem::HandleActiveInterventionsChanged()

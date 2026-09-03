@@ -44,6 +44,29 @@ public:
 	UFUNCTION(BlueprintPure, Category = "DOS|Case")
 	const TSet<FName>& GetCollectedClues() const { return CollectedClues; }
 
+	// --- 되감기 -------------------------------------------------------------
+	//
+	// **개입이 언제 성립했는지를 기록한다.** 참/거짓만 저장하면 "마지막 상호작용 직전으로
+	// 돌리기"를 계산할 수 없고, 되감아도 밀어놓은 물건이 제자리로 안 돌아간다
+	// (20:30에 설탕통을 엎고 19:00으로 되감으면 아직 엎지도 않았는데 엎어져 있다).
+
+	// 마지막으로 성립한 개입의 시각. 하나도 없으면 -1.
+	UFUNCTION(BlueprintPure, Category = "DOS|Case")
+	float GetLastInterventionTime() const;
+
+	UFUNCTION(BlueprintPure, Category = "DOS|Case")
+	float GetInterventionTime(FName InterventionId) const;
+
+	// 그 시각 이후에 성립한 개입을 전부 되돌린다. 되감기가 개입을 그대로 두면 아직 밀지도
+	// 않은 시각에 이미 밀린 결과가 재생되므로, 시간과 상태를 같이 되돌려야 한다.
+	UFUNCTION(BlueprintCallable, Category = "DOS|Case")
+	void RewindTo(float TimeSeconds);
+
+	// 마지막 개입 직전으로 시간과 상태를 함께 되돌린다. 일시정지 화면이 부른다.
+	// 되돌릴 개입이 없으면 false.
+	UFUNCTION(BlueprintCallable, Category = "DOS|Case")
+	bool RewindToLastIntervention(float MarginSeconds = 5.f);
+
 	// Directly sets both sets from save data (e.g. Continue) and broadcasts
 	// OnActiveInterventionsChanged so NPC schedules refresh - does not touch CollectedClues
 	// listeners since clue rediscovery notifications don't need to re-fire on load.
@@ -65,6 +88,10 @@ private:
 
 	UPROPERTY(Transient)
 	TSet<FName> ActiveInterventions;
+
+	// 개입 id -> 성립한 타임라인 시각.
+	UPROPERTY(Transient)
+	TMap<FName, float> InterventionTimes;
 
 	UPROPERTY(Transient)
 	TSet<FName> CollectedClues;

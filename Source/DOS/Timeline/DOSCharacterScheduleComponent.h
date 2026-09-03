@@ -28,6 +28,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "DOS|Schedule")
 	TObjectPtr<UDOSCharacterScheduleAsset> ScheduleAsset;
 
+	// 샘플링한 위치를 소유 액터의 트랜스폼에 곧바로 찍을지. 기본값은 true(스크립트대로 순간
+	// 배치)지만, **NavMesh로 실제로 걷게 하려면 꺼야 한다** - 켜 두면 매 틱 순간이동이
+	// 걸음을 덮어써서 이동이 성립하지 않는다. 끄면 OnCharacterStateApplied만 쏘고 트랜스폼은
+	// 건드리지 않으므로, 소유 액터가 그 목표 지점까지 알아서 걸어가면 된다.
+	// (ADOSScheduledCharacter가 이 방식으로 쓴다)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DOS|Schedule")
+	bool bApplyTransformToOwner = true;
+
 	// Recomputes the resolved (base + applicable overrides) waypoint list. Call this whenever
 	// the current round's active interventions change - the owning actor/Blueprint is
 	// responsible for listening to UDOSCaseSubsystem::OnActiveInterventionsChanged and

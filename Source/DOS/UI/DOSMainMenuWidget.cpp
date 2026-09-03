@@ -1,4 +1,5 @@
 #include "DOSMainMenuWidget.h"
+#include "DOSSettingsWidget.h"
 #include "SaveGame/DOSSaveGameSubsystem.h"
 #include "Components/Button.h"
 #include "Components/Image.h"
@@ -21,6 +22,11 @@ void UDOSMainMenuWidget::NativeOnInitialized()
 		const UDOSSaveGameSubsystem* SaveGameSubsystem = GetSaveGameSubsystem();
 		const bool bHasSave = SaveGameSubsystem && SaveGameSubsystem->HasSaveGame();
 		ContinueButton->SetIsEnabled(bHasSave);
+	}
+
+	if (SettingsButton)
+	{
+		SettingsButton->OnClicked.AddDynamic(this, &UDOSMainMenuWidget::HandleSettingsClicked);
 	}
 
 	if (BackgroundImage)
@@ -49,6 +55,19 @@ void UDOSMainMenuWidget::HandleContinueClicked()
 	if (UDOSSaveGameSubsystem* SaveGameSubsystem = GetSaveGameSubsystem())
 	{
 		SaveGameSubsystem->ContinueGame();
+	}
+}
+
+void UDOSMainMenuWidget::HandleSettingsClicked()
+{
+	if (!SettingsWidgetClass)
+	{
+		return;
+	}
+
+	if (UDOSSettingsWidget* SettingsWidget = CreateWidget<UDOSSettingsWidget>(GetOwningPlayer(), SettingsWidgetClass))
+	{
+		SettingsWidget->AddToViewport();
 	}
 }
 
