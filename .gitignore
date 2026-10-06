@@ -22,3 +22,7 @@ Saved/
 # Visual Studio cache
 .vs/
 *.ipch
+
+/Content/Low_Poly_Wolf_Riding/
+/Content/PolygonDarkFantasy/
+/Content/PolygonParticleFX/
